@@ -21,7 +21,7 @@ yum-config-manager --enable epel > /dev/null
 # Amazon Linux has had a bad habit of breaking puppet 3.x due to ruby
 # upgrades and missing package dependencies
 echo "Installing puppet via rubygems"
-yum -y install rubygems ruby-devel augeas-devel > /dev/null || rc=$?
+yum -y install rubygems ruby-devel augeas augeas-devel augeas-libs > /dev/null || rc=$?
 gem install puppet ruby-augeas ruby-nagios --no-rdoc --no-ri > /dev/null || rc=$?
 
 if [ -n "$rc" ]; then
