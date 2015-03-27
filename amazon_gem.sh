@@ -57,12 +57,11 @@ done
 for _package in rubygems ruby-devel augeas augeas-devel augeas-libs; do 
   _install_package "$_package" || rc=$?
 done
+
 for _gem in puppet ruby-augeas ruby-nagios; do
-
   [[ "$_gem" == "puppet" && -n "$_puppetver" ]] && _gem_version="$_puppetver"
-    _install_gem "$_gem" "$_gem_version" || rc=$?
-    _gem_version=""
-
+  _install_gem "$_gem" "$_gem_version" || rc=$?
+  _gem_version=""
 done
 
 if [ -n "$rc" ]; then
