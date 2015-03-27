@@ -32,11 +32,8 @@ function _install_package {
 function _install_gem {
   [[ -z "$1" ]] && _error "missing gem_name argument" && return 1
   [[ $(gem list "$1") =~ "$1" ]] && _info "$1 gem is already installed" && return 0
-  if [[ -n "$2" ]]; then
-    _info "installing $1" && gem install "$1" -v "$2" --no-rdoc --no-ri
-  else
-    _info "installing $1" && gem install "$1" --no-rdoc --no-ri
-  fi
+  [[ -n "$2" ]] && local version_opt="-v $2"
+  _info "installing $1" && gem install "$1" $version_opt --no-rdoc --no-ri
   local rc=$?
   [[ $rc -ne 0 ]] && _error "failed to install gem $1" && return $?
   _info "$1 package is installed"
@@ -46,26 +43,25 @@ function _install_gem {
 yum-config-manager --enable epel > /dev/null
 
 _info "Installing puppet via rubygems"
+
+# Scan through commands to see if specific versions are set
+while [[ -n "$1" ]]; do
+  case "$1" in
+    --puppetver) shift
+      _puppetver="$1"
+      ;;
+  esac
+  shift
+done
+
 for _package in rubygems ruby-devel augeas augeas-devel augeas-libs; do 
   _install_package "$_package" || rc=$?
 done
 for _gem in puppet ruby-augeas ruby-nagios; do
 
-  # Scan through commands to see if specific versions are set
-  while [ $# -gt 0 ]
-  do
-      if [[ "$1" == "--puppetver" && $# -gt 1 ]]; then
-        shift
-        _puppetver=$1
-      fi
-      shift
-  done
-
-  if [[ "$_gem" == "puppet" && -n "$_puppetver" ]]; then
-    _install_gem "$_gem" "$_puppetver" || rc=$?
-  else
-    _install_gem "$_gem" || rc=$?
-  fi
+  [[ "$_gem" == "puppet" && -n "$_puppetver" ]] && _gem_version="$_puppetver"
+    _install_gem "$_gem" "$_gem_version" || rc=$?
+    _gem_version=""
 
 done
 
